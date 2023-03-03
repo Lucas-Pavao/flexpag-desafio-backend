@@ -36,6 +36,19 @@ public class PaymentController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Pagamento não encontrado!");
             }
         }
+    @GetMapping(path = "/api/payment/status/{id}")
+    public ResponseEntity getStatusById(@PathVariable("id") Long id){
+        boolean pagamentoExiste = paymentService.pagametoExisteById(id);
+        if(pagamentoExiste) {
+            PaymentModel payment = paymentService.getById(id);
+            if (payment.getData().equals(Instant.now()) || payment.getData().isBefore(Instant.now())) {
+                paymentService.putPagamentoStatus(id, PaymentStatus.PAID);
+            }
+            return ResponseEntity.status(HttpStatus.OK).body(payment.getStatus());
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Pagamento não encontrado!");
+        }
+    }
         @PostMapping(path = "/api/payment/salvar")
         public ResponseEntity<String> post(@RequestBody PaymentModel payment){
              if (payment.getData().isBefore(Instant.now())) {
